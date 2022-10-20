@@ -12,3 +12,17 @@ function App() {
         choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit']
     }];
 };
+
+//app methods
+App.prototype.initApp = function() {
+    //first inquirer prompt
+    inquirer
+        .prompt(app.firstPrompt)
+        .then(response => {
+            console.log(response)
+        });
+};
+
+//INIT APP ----------------------------------
+const app = new App();
+app.initApp();
