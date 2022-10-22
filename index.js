@@ -3,6 +3,7 @@ const db = require('./db/connection');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 
+
 //APP OBJECT ------------------------------------
 function App() {
     //prompts -------------
@@ -48,6 +49,25 @@ function App() {
         message: 'Enter department id for the role: '
     }];
 
+    //add department
+    this.addDepartmentPrompt = [{
+        type: 'input',
+        name: 'name',
+        message: 'Enter department name: '
+    }];
+
+    //update employee role
+    this.updateEmployeePrompt = [{
+        type: 'input',
+        name: 'updateRoleId',
+        message: 'Enter the new role id: '
+    },
+    {
+        type: 'input',
+        name: 'updateEmployeeId',
+        message: 'Enter the employee id: '
+    }];
+
     
 
     //db queries -------------------
@@ -59,6 +79,13 @@ function App() {
     this.viewAllRolesQuery = `SELECT * FROM roles`;
     //add role 
     this.addRoleQuery = `INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)`;
+    //view department
+    this.viewAllDepartmentsQuery = `SELECT * FROM departments`;
+    //add department
+    this.addDepartmentQuery = `INSERT INTO departments (name) VALUES (?)`;
+    //update employee role query
+    this.updateEmployeeQuery = `UPDATE employees SET role_id = ? WHERE id = ?`
+
 
     
     
@@ -72,12 +99,10 @@ App.prototype.initApp = function() {
         .then(({ firstPromptAction }) => {
             if (firstPromptAction === 'View All Employees') {
                 //db query for view all employees
-                db.query(app.viewAllEmployeesQuery, (err,rows) => {
-                    if (err) {
-                        console.log(err.message);
-                        return;
-                    }
+                db.promise().query(app.viewAllEmployeesQuery)
+                .then(([rows,fields]) => {
                     console.log(rows);
+                    app.initApp();
                 });
             } else if (firstPromptAction === 'Add Employee') {
                 inquirer
@@ -85,23 +110,19 @@ App.prototype.initApp = function() {
                     .then(({ firstName, lastName, roleId }) => {
                         //db query for add emplooyee
                         const params = [firstName, lastName, roleId];
-                        db.query(app.addEmployeeQuery, params, (err, result) => {
-                            if (err) {
-                                console.log(err.message);
-                                return;
-                            }
-                            console.log(result);
+                        db.promise().query(app.addEmployeeQuery, params)
+                        .then(([rows,fields]) => {
+                            console.log(rows);
                             console.log('added succesfully');
+                            app.initApp();
                         });
                     });
             } else if (firstPromptAction === 'View All Roles') {
                 //db.query for view all roles
-                db.query(app.viewAllRolesQuery, (err,rows) => {
-                    if (err) {
-                        console.log(err.message);
-                        return;
-                    }
+                db.promise().query(app.viewAllRolesQuery)
+                .then(([rows,fields]) => {
                     console.log(rows);
+                    app.initApp();
                 });
             } else if (firstPromptAction === 'Add Role') {
                 inquirer
@@ -110,15 +131,48 @@ App.prototype.initApp = function() {
                         //db query for add role
                         const params = [title, salary, departmentId];
                         console.log(params);
-                        db.query(app.addRoleQuery, params, (err, results) => {
-                            if (err) {
-                                console.log(err.message);
-                                return;
-                            }
-                            console.log(results);
+                        db.promise().query(app.addRoleQuery, params)
+                        .then(([rows,fields]) => {
+                            console.log(rows);
                             console.log('added succesfully');
+                            app.initApp();
                         });
                     });
+            } else if (firstPromptAction === 'View All Departments') {
+                // db query for view all departments
+                db.promise().query(app.viewAllDepartmentsQuery)
+                .then(([rows,fields]) => {
+                    console.log(rows);
+                    app.initApp();
+                });
+            } else if (firstPromptAction === 'Add Department') {
+                inquirer
+                    .prompt(app.addDepartmentPrompt)
+                    .then(({ name }) => {
+                        //db query for add department
+                        const params = [name];
+                        db.promise().query(app.addDepartmentQuery, params)
+                        .then(([rows,fields]) =>{
+                            console.log(rows);
+                            console.log('added succesfully');
+                            app.initApp();
+                        });
+                    });
+            } else if (firstPromptAction === 'Update Employee Role') {
+                inquirer
+                    .prompt(app.updateEmployeePrompt)
+                    .then(({ updateRoleId, updateEmployeeId }) => {
+                        //db querry for update employee role
+                        const params = [updateRoleId, updateEmployeeId];
+                        db.promise().query(app.updateEmployeeQuery, params)
+                        .then(([rows,fields]) => {
+                            console.log(rows);
+                            console.log('updated succesfully');
+                            app.initApp();
+                        });
+                    });
+            } else {
+                db.end();
             }
         });
 };
@@ -126,3 +180,4 @@ App.prototype.initApp = function() {
 //INIT APP ----------------------------------
 const app = new App();
 app.initApp();
+
