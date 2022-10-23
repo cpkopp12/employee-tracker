@@ -78,11 +78,15 @@ function App() {
 
     //db queries -------------------
     //view employees
-    this.viewAllEmployeesQuery = `Select * FROM employees`;
+    this.viewAllEmployeesQuery = ` SELECT A.id AS employee_id, A.first_name, A.last_name, roles.title, departments.name, roles.salary, B.first_name AS magnager_first_name, B.last_name AS manager_last_name 
+    FROM (((employees A LEFT JOIN employees B ON A.manager_id = B.id) 
+    JOIN roles ON A.role_id = roles.id) 
+    JOIN departments ON roles.department_id = departments.id);`;
     //add employee
     this.addEmployeeQuery = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
     //view roles
-    this.viewAllRolesQuery = `SELECT * FROM roles`;
+    this.viewAllRolesQuery = `SELECT roles.title, roles.id AS role_id, departments.name AS department_name, roles.salary
+    FROM roles JOIN departments ON roles.department_id = departments.id`;
     //add role 
     this.addRoleQuery = `INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)`;
     //view department
